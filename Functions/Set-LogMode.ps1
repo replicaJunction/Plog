@@ -30,7 +30,10 @@
         # if you are using non-default log names or sources.
         [Parameter(ParameterSetName = 'LogToEventLog',
                    Mandatory = $false)]
-        [Switch] $NoTest
+        [Switch] $NoTest,
+        
+        # Should the log contents also be displayed in the host window?
+        [bool] $WriteHost = $true
     )
     
     begin {
@@ -91,6 +94,8 @@
                 $p.FilePath = $FilePath
             }
         }
+        
+        $p.WriteHost = $WriteHost
     }
     
     end {

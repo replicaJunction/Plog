@@ -21,6 +21,8 @@ function Write-Log {
             'Warning'     { $severityInt = 2 }
             'Error'       { $severityInt = 3 }
         }
+        
+        $scriptLineNumber = "$($MyInvocation.ScriptName | Split-Path -Leaf):$($MyInvocation.ScriptLineNumber)"
     }
 
     process {
@@ -41,17 +43,43 @@ function Write-Log {
                 
                 $timestamp = "$(Get-Date -Format 'HH:mm:ss').$((Get-Date).Millisecond)+000"
                 
-                $lineFormat = $Message, $timestamp, (Get-Date -Format MM-dd-yyyy), "$($MyInvocation.ScriptName | Split-Path -Leaf):$($MyInvocation.ScriptLineNumber)", $script:currentUser, $severityInt
+                $lineFormat = $Message, $timestamp, (Get-Date -Format MM-dd-yyyy), $scriptLineNumber, $script:currentUser, $severityInt
                 
                 Add-Content -Value ($script:linetemplate -f $lineFormat) -Path $p.FilePath
             }
             'EventLog' {
                 $eventID = 1000 + $severityInt
-                Write-EventLog -LogName $p.LogName -Source $p.Source -EventID $eventID -EntryType $Severity -Message $Message 
+                Write-EventLog -LogName $p.LogName -Source $p.Source -EventID $eventID -EntryType $Severity -Message "$scriptLineNember :: $Message" 
             }
             default {
                 throw 'Logging options are undefined. You must call Set-LogMode first.'
             }
+        }
+        
+        if ($p.WriteHost) {
+            if (-not $script:hostTemplate) {
+                $script:hostTemplate = '[{0}] :: {1}'
+            }
+            
+            $timestamp = "$(Get-Date -Format 'hh:mm:ss')"
+            switch ($severityInt) {
+                1 {
+                    $fg = $host.PrivateData.VerboseForegroundColor
+                    $bg = $host.PrivateData.VerboseBackgroundColor
+                }
+                
+                2 {
+                    $fg = $host.PrivateData.WarningForegroundColor
+                    $bg = $host.PrivateData.WarningBackgroundColor
+                }
+                
+                3 {
+                    $fg = $host.PrivateData.ErrorForegroundColor
+                    $bg = $host.PrivateData.ErrorBackgroundColor
+                }
+            }
+            $hostFormat = $timestamp, $Message
+            Write-Host -Object ($script:hostTemplate -f $hostFormat) -ForegroundColor $fg -BackgroundColor $bg
         }
     }
 }

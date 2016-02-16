@@ -4,13 +4,13 @@ $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path) -replace '\.Tests\.', '.'
 
 InModuleScope 'Plog' {    
     Describe 'Set-LogMode' {
-        
         Mock Get-ModulePrivateData {
             Write-Output @{}
         }
         
-        Context 'LogToFile' {
-            $filePath = "TestDrive:\dir\temp.log"
+        $filePath = "TestDrive:\dir\temp.log"
+        
+        Context 'LogToFile' {    
             
             Mock Set-ModulePrivateData {
                 # Export what would be set to the PrivateData FilePath variable
@@ -51,6 +51,23 @@ InModuleScope 'Plog' {
                 $output = Set-LogMode -EventLog -LogName 'LogName1' -Source 'Source1' -NoTest
                 $output.LogName | Should Be 'LogName1'
                 $output.Source | Should Be 'Source1'
+            }
+        }
+        
+        Context 'Write-Host testing' {
+            Mock Set-ModulePrivateData { $PrivateData.WriteHost }
+            
+            It 'Updates the WriteHost parameter in module PrivateData' {    
+                $output = Set-LogMode -FilePath $filePath -WriteHost $false
+                $output | Should Be $false
+                
+                $output = Set-LogMode -FilePath $filePath -WriteHost $true
+                $output | Should Be $true
+            }
+            
+            It 'Defaults to WriteHost = $true' {
+                $output = Set-LogMode -FilePath $filePath
+                $output | Should Be $true
             }
         }
     }

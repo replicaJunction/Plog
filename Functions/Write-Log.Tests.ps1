@@ -24,6 +24,10 @@ InModuleScope "Plog" {
                 { Write-Log -Message 'Test' } | Should Not Throw
                 $filePath | Should Exist
             }
+            
+            It 'Produces no output' {
+                Write-Log -Message 'Test' | Should BeNullOrEmpty
+            }
         }
 
         Context 'Logging to event log' {
@@ -58,6 +62,31 @@ InModuleScope "Plog" {
                 (Write-Log -Message 'Test information').EntryType | Should Be 'Information'
                 (Write-Log -Message 'Test warning' -Severity Warning).EntryType | Should Be 'Warning'
                 (Write-Log -Message 'Test error' -Severity Error).EntryType | Should Be 'Error'
+            }
+        }
+        
+        Context 'Write-Host testing' {
+            Mock Get-ModulePrivateData {
+                @{
+                    Mode      = 'File'
+                    FilePath  = $filePath
+                    WriteHost = $true
+                }
+            }
+            
+            Mock Write-Host {
+                @{
+                    Message         = $Object
+                    ForegroundColor = $ForegroundColor
+                    BackgroundColor = $BackgroundColor
+                }
+            }
+            
+            It 'Produces output to Write-Host if the WriteHost value is set' {
+                $output = Write-Log -Message 'Test'
+                Assert-MockCalled -CommandName Write-Host -Scope It -Times 1 -Exactly
+                $output.ForegroundColor | Should Be $host.PrivateData.VerboseForegroundColor
+                $output.BackgroundColor | Should Be $host.PrivateData.VerboseBackgroundColor
             }
         }
         
