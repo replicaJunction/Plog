@@ -12,10 +12,10 @@ I wasn't able to find a single, all-in-one module that met my needs exactly, so 
 
 ## Plog goals
 
-* Simplicity. Plog provides a simple, drop-in logging framework for PowerShell scripting without extra hassle. 
-* Flexibility. Plog can write to a configurable log file or a Windows event log.
-* Readability. Plog produces log files designed for CMTrace, taking full advantage of the same logging methods used by System Center Configuration Manager. Log files include timestamps and script line number.
-* Performance. Plog uses persistent script variables to increase performance wherever possible.
+* **Simplicity.** Plog provides a simple, drop-in logging framework for PowerShell scripting without extra hassle. 
+* **Flexibility.** Plog can write to a configurable log file or a Windows event log.
+* **Readability**. Plog produces log files designed for CMTrace, taking full advantage of the same logging methods used by System Center Configuration Manager. Log files include timestamps and script line number.
+* **Performance**. Plog uses persistent script variables to increase performance wherever possible.
 
 # Credits
 
