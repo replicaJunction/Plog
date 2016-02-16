@@ -6,6 +6,11 @@
                    Mandatory = $true)]
         [String] $FilePath,
         
+        # Clear the contents of the current log file
+        [Parameter(ParameterSetName = 'LogToFile',
+                   Mandatory = $false)]
+        [Switch] $Clear,
+        
         # Indicates that logging should be done to the Windows event log.
         [Parameter(ParameterSetName = 'LogToEventLog',
                    Mandatory = $true)]
@@ -57,16 +62,21 @@
             }
             
             'LogToFile' {
+                if ($Clear -and (Test-Path -Path $FilePath)) {
+                    Write-Verbose "Clear was specified. Clearing current contents of log file $FilePath"
+                    [void] (Remove-Item -Path $FilePath -Force)
+                }
+                
                 if (-not (Test-Path -Path $FilePath)) {
                     Write-Verbose "Log file $FilePath does not exist. Attempting to create the file..."
                     try {
                         $directory = Split-Path -Path $FilePath -Parent
                         if (-not (Test-Path -Path $directory)) {
                             Write-Verbose "Creating parent directory $directory"
-                            $null = New-Item -Path $directory -ItemType Directory -Force
+                            [void] (New-Item -Path $directory -ItemType Directory -Force)
                         }
                         
-                        $null = New-Item -Path $FilePath -ItemType File -Force
+                        [void] (New-Item -Path $FilePath -ItemType File -Force)
                     }
                     catch [System.Exception] {
                         $err = $_
