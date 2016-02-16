@@ -17,6 +17,28 @@ I wasn't able to find a single, all-in-one module that met my needs exactly, so 
 * **Readability**. Plog produces log files designed for CMTrace, taking full advantage of the same logging methods used by System Center Configuration Manager. Log files include timestamps and script line number.
 * **Performance**. Plog uses persistent script variables to increase performance wherever possible.
 
+# How do I use Plog?
+
+1. Install Plog to your PSModulePath. I will add Plog to the PowerShell Gallery if there is sufficient demand for it.
+2. In a script where you'd like to use Plog, use Set-LogMode to define how you'd like Plog to log output:
+3. Anywhere you'd like to log output, simply use Write-Log instead of Write-Verbose or similar.
+
+# Examples
+
+```powershell
+# Log to a file and display output in the console
+Set-LogMode -FilePath C:\Logs\mylog.log
+
+# Log to the Windows PowerShell event log without displaying console output
+Set-LogMode -EventLog -WriteHost $false
+
+# Write a log entry. This is the simplest way to use Plog.
+Write-Log "MyVar value is $myVar"
+
+# Write an error log entry (red in CMTrace, or an Error event in the event viewer)
+Write-Log "Something broke!" -Severity Error
+```
+
 # Credits
 
 Plog would not be possible without some of the great posts from #PSBlogWeek 2016. I'd especially like to thank Adam Bertram for information on CMTrace's logging template, as well as the method for logging the script line number. 
