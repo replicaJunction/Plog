@@ -6,16 +6,20 @@ InModuleScope "Plog" {
     Describe "Write-Log" {
         $filePath = "TestDrive:\temp.log"
 
-        Context 'Logging to file' {
-            Mock Get-ModulePrivateData {
-                @{
-                    Mode     = 'File'
-                }
-            }
+        $privateData = @{
+            Mode = 'File'
+        }
+        
+        Mock Get-ModulePrivateData {
+            $privateData        
+        }
             
+        Context 'Logging to file' {
             Mock Get-LogFileName {
                 $filePath
             }
+            
+            Mock Optimize-LogFile {}
             
             It 'Uses Get-ModulePrivateData to obtain log settings' {
                 { Write-Log -Message 'Test' } | Should Not Throw
@@ -34,15 +38,19 @@ InModuleScope "Plog" {
             It 'Produces no output' {
                 Write-Log -Message 'Test' | Should BeNullOrEmpty
             }
+            
+            It 'Calls Optimize-LogFile if the MaxSize parameter is set' {
+                $privateData.MaxSize = 250KB
+                { Write-Log -Message 'Test' } | Should Not Throw
+                Assert-MockCalled -CommandName Optimize-LogFile -Scope It -Times 1 -Exactly
+            }
         }
 
         Context 'Logging to event log' {
-            Mock Get-ModulePrivateData {
-                @{
-                    Mode    = 'EventLog'
-                    LogName = 'Windows PowerShell'
-                    Source  = 'PowerShell' 
-                }
+            $privateData = @{
+                Mode    = 'EventLog'
+                LogName = 'Windows PowerShell'
+                Source  = 'PowerShell' 
             }
             
             Mock Write-EventLog { 
@@ -96,8 +104,9 @@ InModuleScope "Plog" {
             }
         }
         
-        Context 'Undefined logging mode' {
+        Context 'Error checking' {
             It 'Throws an error if logging options have not been initialized' {
+                $privateData = @{}
                 { Write-Log -Message 'Test' } | Should Throw 'Logging options are undefined. You must call Set-LogMode first.'
             }
         }

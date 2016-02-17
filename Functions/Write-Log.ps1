@@ -49,6 +49,10 @@ function Write-Log {
                 $lineFormat = $Message, $timestamp, (Get-Date -Format MM-dd-yyyy), $scriptLineNumber, $script:currentUser, $severityInt
                 
                 Add-Content -Value ($script:linetemplate -f $lineFormat) -Path $script:logFileFullPath
+                
+                if ($p.MaxSize) {
+                    Optimize-LogFile
+                }
             }
             'EventLog' {
                 $eventID = 1000 + $severityInt

@@ -6,6 +6,12 @@
                    Mandatory = $true)]
         [String] $FilePath,
         
+        # Maximum size for a single log file. If this is set, Plog will
+        # automatically clean up larger files by creating a log history.
+        [Parameter(ParameterSetName = 'LogToFile',
+                   Mandatory = $false)]
+        [long] $MaxSize,
+        
         # Do not add a timestamp to the filename
         [Parameter(ParameterSetName = 'LogToFile',
                    Mandatory = $false)]
@@ -104,6 +110,7 @@
                 $p.Directory = $logDirectory
                 $p.FileName = $logFilename
                 $p.FileNameUseTimestamp = $FileNameUseTimestamp
+                $p.MaxSize = $MaxSize
             }
         }
         
