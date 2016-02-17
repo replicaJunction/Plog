@@ -12,6 +12,11 @@
                    Mandatory = $false)]
         [long] $MaxSize,
         
+        # Maximum number of log files to preserve if using MaxSize.
+        [Parameter(ParameterSetName = 'LogToFile',
+                   Mandatory = $false)]
+        [int] $MaxHistory,
+        
         # Do not add a timestamp to the filename
         [Parameter(ParameterSetName = 'LogToFile',
                    Mandatory = $false)]
@@ -106,11 +111,12 @@
                     Write-Verbose "Log file $FilePath already exists."
                 }
                 
-                $p.Mode = 'File'
-                $p.Directory = $logDirectory
-                $p.FileName = $logFilename
+                $p.Mode                 = 'File'
+                $p.Directory            = $logDirectory
+                $p.FileName             = $logFilename
                 $p.FileNameUseTimestamp = $FileNameUseTimestamp
-                $p.MaxSize = $MaxSize
+                $p.MaxSize              = $MaxSize
+                $p.MaxHistory           = $MaxHistory
             }
         }
         

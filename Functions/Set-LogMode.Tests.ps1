@@ -22,11 +22,13 @@ InModuleScope 'Plog' {
                 $filePath | Should Exist
             }
             
-            It 'Updates the module PrivateData with file path and settings' {
-                $output = Set-LogMode -FilePath $filePath
+            It 'Updates the module PrivateData with all expected properties' {
+                $output = Set-LogMode -FilePath $filePath -MaxSize 25KB -MaxHistory 3
                 $output.Mode | Should BeExactly 'File'
                 $output.Directory | Should BeExactly 'TestDrive:\dir'
                 $output.FileName | Should BeExactly 'temp.log'
+                $output.MaxSize | Should Be 25KB
+                $output.MaxHistory | Should Be 3
             }
         }
         
@@ -49,7 +51,7 @@ InModuleScope 'Plog' {
                 Assert-MockCalled -CommandName Write-EventLog -Scope It -Times 1 -Exactly
             }
             
-            It 'Updates the module PrivateData with event source and log name' {
+            It 'Updates the module PrivateData with all expected properties' {
                 $output = Set-LogMode -EventLog -LogName 'LogName1' -Source 'Source1' -NoTest
                 $output.LogName | Should Be 'LogName1'
                 $output.Source | Should Be 'Source1'
