@@ -6,6 +6,11 @@
                    Mandatory = $true)]
         [String] $FilePath,
         
+        # Do not add a timestamp to the filename
+        [Parameter(ParameterSetName = 'LogToFile',
+                   Mandatory = $false)]
+        [bool] $FileNameUseTimestamp = $true,
+        
         # Clear the contents of the current log file
         [Parameter(ParameterSetName = 'LogToFile',
                    Mandatory = $false)]
@@ -98,6 +103,7 @@
                 $p.Mode = 'File'
                 $p.Directory = $logDirectory
                 $p.FileName = $logFilename
+                $p.FileNameUseTimestamp = $FileNameUseTimestamp
             }
         }
         
