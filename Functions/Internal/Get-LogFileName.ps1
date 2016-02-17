@@ -1,6 +1,9 @@
 ﻿function Get-LogFileName {
     [CmdletBinding()]
-    param()
+    param(
+        # Numeric suffix to use
+        [int] $Suffix = -1
+    )
     
     begin {
         $p = Get-ModulePrivateData
@@ -13,25 +16,26 @@
     
     process {
         if ($p.Mode -eq 'File') {
-            if (-not $script:logFileName) {
-                if ($p.FileNameUseTimestamp) {
-                    $i = $p.FileName.LastIndexOf('.')
-            
-                    $basename = $p.FileName.substring(0, $i)
-                    $extension = $p.FileName.substring($i) # includes the dot, i.e. .log
-                    
-                    $fileName = '{0}_{1}{2}' -f $basename, (Get-Date -Format $script:fileDateFormat), $extension
-                    
-                    $fullName = Join-Path -Path $p.Directory -ChildPath $fileName
-                }
-                else {
-                    $fullName = Join-Path -Path $p.Directory -ChildPath $p.FileName
-                }
+            $i = $p.FileName.LastIndexOf('.')
+        
+            $basename = $p.FileName.substring(0, $i)
+            $extension = $p.FileName.substring($i) # includes the dot, i.e. .log
                 
-                $script:logFileName = $fullName
+            if ($p.FileNameUseTimestamp -and $Suffix -gt -1) {
+                $fileName = '{0}_{1}_{2}{3}' -f $basename, (Get-Date -Format $script:fileDateFormat), $Suffix, $extension
             }
+            elseif ($p.FileNameUseTimestamp) {
+                $fileName = '{0}_{1}{2}' -f $basename, (Get-Date -Format $script:fileDateFormat), $extension
+            }
+            elseif ($Suffix -gt -1) {
+                $fileName = '{0}_{1}{2}' -f $basename, $Suffix, $extension
+            }               
+            else {
+                $fileName = $p.FileName
+            } 
             
-            Write-Output $script:logFileName
+            $fullName = Join-Path -Path $p.Directory -ChildPath $fileName
+            Write-Output $fullName
         }
         else {
             Write-Debug "Not in File mode, so there is no filename for logging"

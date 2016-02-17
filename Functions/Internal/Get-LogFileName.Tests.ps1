@@ -29,12 +29,20 @@ InModuleScope 'Plog' {
             Get-LogFileName | Should Be $expectedFilename
         }
         
+        It 'Gets a log file name with a numeric suffix if Suffix is provided' {
+            $expectedFilename = 'TestDrive:\dir\test_5.log' -f $dateConstant
+            Get-LogFileName -Suffix 5 | Should Be $expectedFilename
+        }
+        
         It 'Gets a log file name with a timestamp if FileNameUseTimestamp is true' {
             $privateData.FileNameUseTimestamp = $true
-            # Remove the script-wide variable used for performance 
-            Remove-Variable -Name logFileName -Scope Script
             $expectedFilename = 'TestDrive:\dir\test_{0}.log' -f $dateConstant
             Get-LogFileName | Should Be $expectedFilename 
+        }
+        
+        It 'Gets a log file name with a timestamp and numeric suffix if both FileNameUseTimestamp and Suffix are provided' {
+            $expectedFilename = 'TestDrive:\dir\test_{0}_5.log' -f $dateConstant
+            Get-LogFileName -Suffix 5 | Should Be $expectedFilename
         }
     }
 }
