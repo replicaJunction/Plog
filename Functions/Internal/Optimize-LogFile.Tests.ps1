@@ -32,7 +32,7 @@ InModuleScope 'Plog' {
             # Original file should no longer exist 
             'TestDrive:\pester.log' | Should Not Exist
         }
-        
+
         It 'Only renames log files once' {
             # Next numbered file in the sequence should now exist.
             # Function should only rename once, even if the older file is above
@@ -46,6 +46,18 @@ InModuleScope 'Plog' {
             { Optimize-LogFile } | Should Not Throw
             
             # Now 0 and 1 should both exist
+            'TestDrive:\pester_0.log' | Should Exist
+            'TestDrive:\pester_1.log' | Should Exist
+            'TestDrive:\pester_2.log' | Should Not Exist
+        }
+        
+        It 'Deletes history files if there are more than the configured MaxHistory value' {
+            $privateData.MaxHistory = 2
+            Set-Content -Path 'TestDrive:\pester.log' -Value ("." * 200)
+            { Optimize-LogFile } | Should Not Throw
+            
+            # 0 and 1 should still exist, but instead of creating 2, it should
+            # have been deleted.
             'TestDrive:\pester_0.log' | Should Exist
             'TestDrive:\pester_1.log' | Should Exist
             'TestDrive:\pester_2.log' | Should Not Exist

@@ -11,15 +11,22 @@
         if ($existingFile.Length -gt $p.MaxSize) {
             Write-Debug "Plog: Optimizing log file"
             
-            # Find a new filename that doesn't exist
+            # Find a new filename that doesn't exist OR try until the file
+            # history limit is reached.
             [int] $suffix = 0
             $oldFilename = Get-LogFileName -Suffix $suffix
-            while (Test-Path -Path $oldFilename) {
+            while ((Test-Path -Path $oldFilename) -and -not ($p.MaxHistory -and ($suffix + 1 -ge $p.MaxHistory))) { 
                 $suffix++
                 $oldFilename = Get-LogFileName -Suffix $suffix
             }
             
-            Write-Debug "Plog: Found available file name $oldFilename (suffix: $suffix)"
+            if ($p.MaxHistory -and ($suffix + 1 -ge $p.MaxHistory)) {
+                Write-Debug "Plog: Maximum history limit reached ($($p.MaxHistory)). File $oldFilename should be deleted."
+                Remove-Item -Path $oldFilename -Force
+            }
+            else {
+                Write-Debug "Plog: Found available file name $oldFilename (suffix: $suffix)"
+            }
             
             # Now rename each file down the line until _0 is available.
             # $suffix doesn't exist due to the while loop above, so start at $suffix - 1
