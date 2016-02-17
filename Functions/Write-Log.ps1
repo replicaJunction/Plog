@@ -28,8 +28,11 @@ function Write-Log {
     process {
         switch ($p.Mode) {
             'File' {
-                if (-not $p.FilePath) {
-                    throw "Unable to write log entry. You must call Start-Log first."
+                if (-not $script:logFileFullPath) {
+                    $script:logFileFullPath = Get-LogFileName
+                    if ([String]::IsNullOrEmpty($script:logFileFullPath)) {
+                        throw "Unable to write log entry. You must call Set-LogMode to define the output file path first."
+                    }
                 }
                 
                 if (-not $script:linetemplate) {
@@ -45,7 +48,7 @@ function Write-Log {
                 
                 $lineFormat = $Message, $timestamp, (Get-Date -Format MM-dd-yyyy), $scriptLineNumber, $script:currentUser, $severityInt
                 
-                Add-Content -Value ($script:linetemplate -f $lineFormat) -Path $p.FilePath
+                Add-Content -Value ($script:linetemplate -f $lineFormat) -Path $script:logFileFullPath
             }
             'EventLog' {
                 $eventID = 1000 + $severityInt

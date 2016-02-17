@@ -10,11 +10,11 @@ InModuleScope 'Plog' {
         
         $filePath = "TestDrive:\dir\temp.log"
         
-        Context 'LogToFile' {    
+        Context 'LogToFile' {
             
             Mock Set-ModulePrivateData {
-                # Export what would be set to the PrivateData FilePath variable
-                $PrivateData.FilePath
+                # Export what would be set to the PrivateData variable
+                $PrivateData
             }
         
             It 'Creates the log file if it does not exist' {
@@ -24,7 +24,9 @@ InModuleScope 'Plog' {
             
             It 'Updates the module PrivateData with file path and settings' {
                 $output = Set-LogMode -FilePath $filePath
-                $output | Should BeExactly $filePath
+                $output.Mode | Should BeExactly 'File'
+                $output.Directory | Should BeExactly 'TestDrive:\dir'
+                $output.FileName | Should BeExactly 'temp.log'
             }
         }
         

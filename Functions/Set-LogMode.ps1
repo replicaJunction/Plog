@@ -70,13 +70,18 @@
                     [void] (Remove-Item -Path $FilePath -Force)
                 }
                 
+                $logDirectory = Split-Path -Path $FilePath -Parent
+                $logFilename = Split-Path -Path $FilePath -Leaf
+                
                 if (-not (Test-Path -Path $FilePath)) {
                     Write-Verbose "Log file $FilePath does not exist. Attempting to create the file..."
                     try {
-                        $directory = Split-Path -Path $FilePath -Parent
-                        if (-not (Test-Path -Path $directory)) {
-                            Write-Verbose "Creating parent directory $directory"
-                            [void] (New-Item -Path $directory -ItemType Directory -Force)
+                        if (-not (Test-Path -Path $logDirectory)) {
+                            Write-Verbose "Creating parent directory $logDirectory"
+                            [void] (New-Item -Path $logDirectory -ItemType Directory -Force)
+                        }
+                        else {
+                            Write-Verbose "Directory $logDirectory appears to exist already"
                         }
                         
                         [void] (New-Item -Path $FilePath -ItemType File -Force)
@@ -91,7 +96,8 @@
                 }
                 
                 $p.Mode = 'File'
-                $p.FilePath = $FilePath
+                $p.Directory = $logDirectory
+                $p.FileName = $logFilename
             }
         }
         

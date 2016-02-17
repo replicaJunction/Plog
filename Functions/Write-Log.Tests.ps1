@@ -10,18 +10,24 @@ InModuleScope "Plog" {
             Mock Get-ModulePrivateData {
                 @{
                     Mode     = 'File'
-                    FilePath = $filePath
                 }
             }
-
-            It 'Uses Get-ModulePrivateData to obtain a reference to the file path' {
+            
+            Mock Get-LogFileName {
+                $filePath
+            }
+            
+            It 'Uses Get-ModulePrivateData to obtain log settings' {
                 { Write-Log -Message 'Test' } | Should Not Throw
                 Assert-MockCalled -CommandName Get-ModulePrivateData -Scope It -Times 1 -Exactly
             }
+            
+            It 'Uses Get-LogFileName to obtain the fully qualified path to the log file' {
+                Assert-MockCalled -CommandName Get-LogFileName -Scope Context -Times 1 -Exactly
+            }
 
-            It 'Creates a file if it does not exist' {
-                Remove-Item -Path $filePath # Need to remove because it was created in the test above
-                { Write-Log -Message 'Test' } | Should Not Throw
+            It 'Creates the log file if it does not exist' {
+                # Should have been created by the tests above
                 $filePath | Should Exist
             }
             
