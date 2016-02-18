@@ -8,39 +8,35 @@ InModuleScope 'Plog' {
             Write-Output @{}
         }
         
+        Mock Set-ModulePrivateData {
+            # Output contents so it can be tested
+            $PrivateData
+        }
+        
         $filePath = "TestDrive:\dir\temp.log"
+        $logPath = 'TestDrive:\dir'
         
         Context 'LogToFile' {
-            
-            Mock Set-ModulePrivateData {
-                # Export what would be set to the PrivateData variable
-                $PrivateData
-            }
         
             It 'Creates the log file if it does not exist' {
-                { Set-LogMode -FilePath $filePath } | Should Not Throw
-                $filePath | Should Exist
+                { Set-LogMode -Path $logPath } | Should Not Throw
+                $logPath | Should Exist
             }
             
             It 'Updates the module PrivateData with all expected properties' {
-                $output = Set-LogMode -FilePath $filePath -MaxSize 25KB -MaxHistory 3
+                $output = Set-LogMode -Path $logPath -MaxDays 3
+                
                 $output.Mode | Should BeExactly 'File'
-                $output.Directory | Should BeExactly 'TestDrive:\dir'
-                $output.FileName | Should BeExactly 'temp.log'
-                $output.MaxSize | Should Be 25KB
-                $output.MaxHistory | Should Be 3
+                $output.Path | Should BeExactly $logPath
+                
+                # History hashtable
+                $output.History | Should Not BeNullOrEmpty
+                $output.History.MaxDays | Should Be 3
             }
         }
         
         Context 'LogToEventLog' {
             Mock Write-EventLog -Verifiable {}
-            
-            Mock Set-ModulePrivateData {
-                @{
-                    Source = $PrivateData.Source
-                    LogName = $PrivateData.LogName
-                }
-            }
             
             It 'Tries to create an example event log entry if -NoTest is not specified' {
                 { Set-LogMode -EventLog } | Should Not Throw
@@ -59,19 +55,18 @@ InModuleScope 'Plog' {
         }
         
         Context 'Write-Host testing' {
-            Mock Set-ModulePrivateData { $PrivateData.WriteHost }
             
             It 'Updates the WriteHost parameter in module PrivateData' {    
-                $output = Set-LogMode -FilePath $filePath -WriteHost $false
-                $output | Should Be $false
+                $output = Set-LogMode -Path $logPath -WriteHost $false
+                $output.WriteHost | Should Be $false
                 
-                $output = Set-LogMode -FilePath $filePath -WriteHost $true
-                $output | Should Be $true
+                $output = Set-LogMode -Path $logPath -WriteHost $true
+                $output.WriteHost | Should Be $true
             }
             
             It 'Defaults to WriteHost = $true' {
-                $output = Set-LogMode -FilePath $filePath
-                $output | Should Be $true
+                $output = Set-LogMode -Path $logPath
+                $output.WriteHost | Should Be $true
             }
         }
     }

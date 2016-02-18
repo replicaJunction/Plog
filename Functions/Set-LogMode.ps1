@@ -1,31 +1,15 @@
 ﻿function Set-LogMode {
     [CmdletBinding(DefaultParameterSetName = 'LogToFile')]
     param(
-        # Path to the log file to use
+        # Directory to use for log files
         [Parameter(ParameterSetName = 'LogToFile',
                    Mandatory = $true)]
-        [String] $FilePath,
-        
-        # Maximum size for a single log file. If this is set, Plog will
-        # automatically clean up larger files by creating a log history.
-        [Parameter(ParameterSetName = 'LogToFile',
-                   Mandatory = $false)]
-        [long] $MaxSize,
+        [String] $Path,
         
         # Maximum number of log files to preserve if using MaxSize.
         [Parameter(ParameterSetName = 'LogToFile',
                    Mandatory = $false)]
-        [int] $MaxHistory,
-        
-        # Do not add a timestamp to the filename
-        [Parameter(ParameterSetName = 'LogToFile',
-                   Mandatory = $false)]
-        [bool] $FileNameUseTimestamp = $true,
-        
-        # Clear the contents of the current log file
-        [Parameter(ParameterSetName = 'LogToFile',
-                   Mandatory = $false)]
-        [Switch] $Clear,
+        [int] $MaxDays,
         
         # Indicates that logging should be done to the Windows event log.
         [Parameter(ParameterSetName = 'LogToEventLog',
@@ -81,42 +65,25 @@
             }
             
             'LogToFile' {
-                if ($Clear -and (Test-Path -Path $FilePath)) {
-                    Write-Verbose "Clear was specified. Clearing current contents of log file $FilePath"
-                    [void] (Remove-Item -Path $FilePath -Force)
-                }
-                
-                $logDirectory = Split-Path -Path $FilePath -Parent
-                $logFilename = Split-Path -Path $FilePath -Leaf
-                
-                if (-not (Test-Path -Path $FilePath)) {
-                    Write-Verbose "Log file $FilePath does not exist. Attempting to create the file..."
+                if (-not (Test-Path -Path $Path)) {
+                    Write-Verbose "Log directory $Path does not exist"
                     try {
-                        if (-not (Test-Path -Path $logDirectory)) {
-                            Write-Verbose "Creating parent directory $logDirectory"
-                            [void] (New-Item -Path $logDirectory -ItemType Directory -Force)
-                        }
-                        else {
-                            Write-Verbose "Directory $logDirectory appears to exist already"
-                        }
-                        
-                        [void] (New-Item -Path $FilePath -ItemType File -Force)
+                            [void] (New-Item -Path $Path -ItemType Directory -Force)
                     }
                     catch [System.Exception] {
                         $err = $_
-                        throw "Unable to access path ${FilePath}: $err"
+                        throw "Unable to create directory ${Path}: $err"
                     }
                 }
                 else {
-                    Write-Verbose "Log file $FilePath already exists."
+                    Write-Verbose "Log directory $Path exists"
                 }
                 
-                $p.Mode                 = 'File'
-                $p.Directory            = $logDirectory
-                $p.FileName             = $logFilename
-                $p.FileNameUseTimestamp = $FileNameUseTimestamp
-                $p.MaxSize              = $MaxSize
-                $p.MaxHistory           = $MaxHistory
+                $p.Mode = 'File'
+                $p.Path = $Path
+                $p.History = @{
+                    MaxDays = $MaxDays
+                }
             }
         }
         
