@@ -83,7 +83,7 @@ InModuleScope "Plog" {
             Mock Get-ModulePrivateData {
                 @{
                     Mode      = 'File'
-                    FilePath  = $filePath
+                    Path      = 'TestDrive:\'
                     WriteHost = $true
                 }
             }
