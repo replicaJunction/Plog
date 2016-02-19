@@ -14,9 +14,7 @@ InModuleScope 'Plog' {
             } 
         }
     
-        Mock Get-ModulePrivateData {
-            $privateData
-        }
+        Mock Get-ModulePrivateData { $privateData }
         
         # Name of this script file, without the .ps1 extension.
         # MyInvocation.MyCommand.Path and MyInvocation.ScriptName do weird
