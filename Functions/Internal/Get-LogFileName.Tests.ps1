@@ -3,19 +3,27 @@ $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path) -replace '\.Tests\.', '.'
 . "$here\$sut"
 
 InModuleScope 'Plog' {
-    
-    $dateFormat = 'yyyymmdd-HHmm'
-    
-    $privateData = @{
-        Mode      = 'File'
-        Directory = 'TestDrive:\dir'
-        FileName  = 'test.log' 
-    }
-    
     Describe "Get-LogFileName" {
+        $dateFormat = 'yyyymmdd-HHmm'
+    
+        $privateData = @{
+            Mode    = 'File'
+            Path    = 'TestDrive:\dir'
+            History = @{
+                Mode = 'Simple'
+            } 
+        }
+    
         Mock Get-ModulePrivateData {
             $privateData
         }
+        
+        # Name of this script file, without the .ps1 extension.
+        # MyInvocation.MyCommand.Path and MyInvocation.ScriptName do weird
+        # things inside Pester.
+        $scriptName = 'Get-LogFileName.Tests'
+        
+        Mock Write-Debug { Write-Host $Message -ForegroundColor Cyan }
         
         # We're going to mock Get-Date to ensure that there's no millisecond difference
         # between the test and the function.
@@ -24,25 +32,33 @@ InModuleScope 'Plog' {
             $dateConstant
         }
         
-        It 'Gets a log file name' {
-            $expectedFilename = 'TestDrive:\dir\test.log' -f $dateConstant
+        It 'Gets a log file name with the current script name a date and timestamp' {
+            $expectedFilename = 'TestDrive:\dir\{0}_{1}.log' -f $scriptName, $dateConstant
             Get-LogFileName | Should Be $expectedFilename
         }
         
-        It 'Gets a log file name with a numeric suffix if Suffix is provided' {
-            $expectedFilename = 'TestDrive:\dir\test_5.log' -f $dateConstant
-            Get-LogFileName -Suffix 5 | Should Be $expectedFilename
+        It 'Returns a filename in a subfolder if History.Mode is set to StructuredFolder' {
+            # Remove script scoped variable
+            Remove-Variable -Name currentLogFile -Scope Script
+            
+            $privateData.History = @{
+                Mode = 'StructuredFolder'
+            }
+            
+            $expectedFilename = 'TestDrive:\dir\{0}\{0}_{1}.log' -f $scriptName, $dateConstant
+            Get-LogFileName | Should Be $expectedFilename
         }
         
-        It 'Gets a log file name with a timestamp if FileNameUseTimestamp is true' {
-            $privateData.FileNameUseTimestamp = $true
-            $expectedFilename = 'TestDrive:\dir\test_{0}.log' -f $dateConstant
-            Get-LogFileName | Should Be $expectedFilename 
+        It 'Accepts a -ScriptName parameter to provide an alternate script name' {
+            # Remove script scoped variable
+            Remove-Variable -Name currentLogFile -Scope Script
+            
+            $expectedFilename = 'TestDrive:\dir\{0}\{0}_{1}.log' -f 'MyScript001', $dateConstant
+            Get-LogFileName -ScriptName 'MyScript001' | Should Be $expectedFilename
         }
         
-        It 'Gets a log file name with a timestamp and numeric suffix if both FileNameUseTimestamp and Suffix are provided' {
-            $expectedFilename = 'TestDrive:\dir\test_{0}_5.log' -f $dateConstant
-            Get-LogFileName -Suffix 5 | Should Be $expectedFilename
+        It 'Creates the log file directory if necessary' {
+            
         }
     }
 }
