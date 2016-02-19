@@ -19,8 +19,6 @@ InModuleScope "Plog" {
                 $filePath
             }
             
-            Mock Optimize-LogFile {}
-            
             It 'Uses Get-ModulePrivateData to obtain log settings' {
                 { Write-Log -Message 'Test' } | Should Not Throw
                 Assert-MockCalled -CommandName Get-ModulePrivateData -Scope It -Times 1 -Exactly
@@ -37,12 +35,6 @@ InModuleScope "Plog" {
             
             It 'Produces no output' {
                 Write-Log -Message 'Test' | Should BeNullOrEmpty
-            }
-            
-            It 'Calls Optimize-LogFile if the MaxSize parameter is set' {
-                $privateData.MaxSize = 250KB
-                { Write-Log -Message 'Test' } | Should Not Throw
-                Assert-MockCalled -CommandName Optimize-LogFile -Scope It -Times 1 -Exactly
             }
         }
 

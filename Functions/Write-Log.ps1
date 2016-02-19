@@ -38,18 +38,13 @@ function Write-Log {
     process {
         switch ($p.Mode) {
             'File' {
-                if (-not $script:logFileFullPath) {
-                    $script:logFileFullPath = Get-LogFileName -ScriptName (Split-Path -Path $MyInvocation.ScriptName -Leaf)
-                    if ([String]::IsNullOrEmpty($script:logFileFullPath)) {
-                        throw "Unable to write log entry. You must call Set-LogMode to define the output file path first."
-                    }
-                }
+                $logFile = Get-LogFileName -ScriptName (Split-Path -Path $MyInvocation.ScriptName -Leaf)
                 
                 $timestamp = "$(Get-Date -Format 'HH:mm:ss').$((Get-Date).Millisecond)+000"
                 
-                $lineFormat = $Message, $timestamp, (Get-Date -Format MM-dd-yyyy), $scriptLineNumber, $script:currentUser, $severityInt
+                $lineFormat = $Message, $timestamp, (Get-Date -Format 'MM-dd-yyyy'), $scriptLineNumber, $script:currentUser, $severityInt
                 
-                Add-Content -Value ($script:linetemplate -f $lineFormat) -Path $script:logFileFullPath -Force
+                Add-Content -Value ($script:linetemplate -f $lineFormat) -Path $logFile -Force
                 
                 if ($p.MaxSize) {
                     Optimize-LogFile

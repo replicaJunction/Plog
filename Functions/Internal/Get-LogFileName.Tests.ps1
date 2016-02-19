@@ -36,9 +36,6 @@ InModuleScope 'Plog' {
         }
         
         It 'Returns a filename in a subfolder if History.Mode is set to StructuredFolder' {
-            # Remove script scoped variable
-            Remove-Variable -Name currentLogFile -Scope Script
-            
             $privateData.History = @{
                 Mode = 'StructuredFolder'
             }
@@ -48,15 +45,13 @@ InModuleScope 'Plog' {
         }
         
         It 'Accepts a -ScriptName parameter to provide an alternate script name' {
-            # Remove script scoped variable
-            Remove-Variable -Name currentLogFile -Scope Script
-            
             $expectedFilename = 'TestDrive:\dir\{0}\{0}_{1}.log' -f 'MyScript001', $dateConstant
             Get-LogFileName -ScriptName 'MyScript001' | Should Be $expectedFilename
         }
         
-        It 'Creates the log file directory if necessary' {
-            
+        It 'Creates the log directory if it does not exist' {
+            $expectedDirectory = 'TestDrive:\dir\{0}' -f $scriptName
+            $expectedDirectory | Should Exist
         }
     }
 }
