@@ -4,7 +4,7 @@ $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path) -replace '\.Tests\.', '.'
 
 InModuleScope 'Plog' {
     Describe "Get-LogFileName" {
-        $dateFormat = 'yyyymmdd-HHmm'
+        $dateFormat = 'yyyyMMdd-HHmm'
     
         $privateData = @{
             Mode    = 'File'

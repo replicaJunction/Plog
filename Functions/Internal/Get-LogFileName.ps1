@@ -12,7 +12,7 @@
         
         # Use a script-wide variable for performance
         if ($script:fileDateFormat -eq $null) {
-            $script:fileDateFormat = 'yyyymmdd-HHmm'
+            $script:fileDateFormat = 'yyyyMMdd-HHmm'
         }
     }
     
