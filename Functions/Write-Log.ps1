@@ -14,6 +14,16 @@ function Write-Log {
     )
 
     begin {
+        # Constants
+        if (-not $script:linetemplate) {
+            # Template for a CMTrace log line.
+            $script:linetemplate = '<![LOG[{0}]LOG]!><time="{1}" date="{2}" component="{3}" context="{4}" type="{5}" thread="" file="">'
+        }
+
+        if (-not $script:currentUser) {
+            $script:currentUser = [Security.Principal.WindowsIdentity]::GetCurrent().Name
+        }
+        
         $p = Get-ModulePrivateData
         
         switch ($Severity) {
@@ -29,26 +39,17 @@ function Write-Log {
         switch ($p.Mode) {
             'File' {
                 if (-not $script:logFileFullPath) {
-                    $script:logFileFullPath = Get-LogFileName
+                    $script:logFileFullPath = Get-LogFileName -ScriptName (Split-Path -Path $MyInvocation.ScriptName -Leaf)
                     if ([String]::IsNullOrEmpty($script:logFileFullPath)) {
                         throw "Unable to write log entry. You must call Set-LogMode to define the output file path first."
                     }
-                }
-                
-                if (-not $script:linetemplate) {
-                    # Template for a CMTrace log line.
-                    $script:linetemplate = '<![LOG[{0}]LOG]!><time="{1}" date="{2}" component="{3}" context="{4}" type="{5}" thread="" file="">'
-                }
-
-                if (-not $script:currentUser) {
-                    $script:currentUser = [Security.Principal.WindowsIdentity]::GetCurrent().Name
                 }
                 
                 $timestamp = "$(Get-Date -Format 'HH:mm:ss').$((Get-Date).Millisecond)+000"
                 
                 $lineFormat = $Message, $timestamp, (Get-Date -Format MM-dd-yyyy), $scriptLineNumber, $script:currentUser, $severityInt
                 
-                Add-Content -Value ($script:linetemplate -f $lineFormat) -Path $script:logFileFullPath
+                Add-Content -Value ($script:linetemplate -f $lineFormat) -Path $script:logFileFullPath -Force
                 
                 if ($p.MaxSize) {
                     Optimize-LogFile
