@@ -13,6 +13,7 @@ InModuleScope 'Plog' {
                 Days       = 1 # Days before today (so this is today and the day before)
             } 
         }
+        
         Mock Get-ModulePrivateData { $privateData }
         
         Mock Invoke-LogCleanupSimple -Verifiable {}
@@ -45,6 +46,14 @@ InModuleScope 'Plog' {
             
             It 'Calls Invoke-LogCleanupStructuredFolder' {
                 Assert-MockCalled -CommandName Invoke-LogCleanupStructuredFolder -Scope Context -Exactly -Times 1
+            }
+        }
+        
+        Context 'Error checking' {
+            $privateData.History.Mode = 'NotSupported'
+            
+            It 'Throws an exception if an undefined or null history mode is set' {
+                { Invoke-LogCleanup } | Should Throw 'Unsupported log history mode [NotSupported]'
             }
         }
     }
