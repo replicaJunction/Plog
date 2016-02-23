@@ -7,21 +7,22 @@ InModuleScope "Plog" {
         $filePath = "TestDrive:\temp.log"
 
         $privateData = @{
-            Mode = 'File'
+            Mode    = 'File'
+            Path    = 'TestDrive:\dir'
+            History = @{
+                Mode = 'Simple'
+            }
         }
         
-        Mock Get-ModulePrivateData {
-            $privateData        
-        }
+        Mock Get-ModulePrivateData { $privateData }
             
         Context 'Logging to file' {
-            Mock Get-LogFileName {
-                $filePath
-            }
+            Mock Get-LogFileName { $filePath }
+            
+            $output = Write-Log -Message 'Test'
             
             It 'Uses Get-ModulePrivateData to obtain log settings' {
-                { Write-Log -Message 'Test' } | Should Not Throw
-                Assert-MockCalled -CommandName Get-ModulePrivateData -Scope It -Times 1 -Exactly
+                Assert-MockCalled -CommandName Get-ModulePrivateData -Scope Context -Times 1 -Exactly
             }
             
             It 'Uses Get-LogFileName to obtain the fully qualified path to the log file' {
@@ -34,7 +35,7 @@ InModuleScope "Plog" {
             }
             
             It 'Produces no output' {
-                Write-Log -Message 'Test' | Should BeNullOrEmpty
+                $output | Should BeNullOrEmpty
             }
         }
 
@@ -55,9 +56,9 @@ InModuleScope "Plog" {
                 }
              }
             
+            $output = Write-Log -Message 'Test'
+            
             It 'Uses Write-EventLog to write the log message to the event log' {
-                $output = Write-Log -Message 'Test'
-                
                 $output.LogName | Should Be 'Windows PowerShell'
                 $output.Source | Should Be 'PowerShell'
                 $output.EventID | Should Be 1001
@@ -71,14 +72,7 @@ InModuleScope "Plog" {
             }
         }
         
-        Context 'Write-Host testing' {
-            Mock Get-ModulePrivateData {
-                @{
-                    Mode      = 'File'
-                    Path      = 'TestDrive:\'
-                    WriteHost = $true
-                }
-            }
+        Context 'Write-Host testing' { 
             
             Mock Write-Host {
                 @{
@@ -88,11 +82,19 @@ InModuleScope "Plog" {
                 }
             }
             
+            
             It 'Produces output to Write-Host if the WriteHost value is set' {
+                $privateData.WriteHost = $true
                 $output = Write-Log -Message 'Test'
                 Assert-MockCalled -CommandName Write-Host -Scope It -Times 1 -Exactly
                 $output.ForegroundColor | Should Be $host.PrivateData.VerboseForegroundColor
                 $output.BackgroundColor | Should Be $host.PrivateData.VerboseBackgroundColor
+            }
+            
+            It 'Does not write output via Write-Host if WriteHost is not set' {
+                $privateData.WriteHost = $false
+                $output = Write-Log -Message 'Test'
+                Assert-MockCalled -CommandName Write-Host -Scope It -Times 0 -Exactly
             }
         }
         
