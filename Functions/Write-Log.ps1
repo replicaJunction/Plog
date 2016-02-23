@@ -9,6 +9,10 @@ function Write-Log {
                    ValueFromRemainingArguments = $true)]
         [String] $Message,
         
+        # The component name to log in CMTrace. If not specified, the
+        # script name will be used.
+        [String] $Component,
+        
         [ValidateSet('Information','Warning','Error')]
         [String] $Severity = 'Information'
     )
@@ -17,11 +21,15 @@ function Write-Log {
         # Constants
         if (-not $script:linetemplate) {
             # Template for a CMTrace log line.
-            $script:linetemplate = '<![LOG[{0}]LOG]!><time="{1}" date="{2}" component="{3}" context="{4}" type="{5}" thread="" file="">'
+            $script:linetemplate = '<![LOG[{0}]LOG]!><time="{1}" date="{2}" component="{3}" context="{4}" type="{5}" thread="{6}" file="{7}">'
         }
 
         if (-not $script:currentUser) {
             $script:currentUser = [Security.Principal.WindowsIdentity]::GetCurrent().Name
+        }
+        
+        if (-not $script:currentProcess) {
+            $script:currentProcess = [System.Diagnostics.Process]::GetCurrentProcess().Id
         }
         
         $p = Get-ModulePrivateData
@@ -32,7 +40,13 @@ function Write-Log {
             'Error'       { $severityInt = 3 }
         }
         
-        $scriptLineNumber = "$($MyInvocation.ScriptName | Split-Path -Leaf):$($MyInvocation.ScriptLineNumber)"
+        $scriptName = "$($MyInvocation.ScriptName | Split-Path -Leaf)"
+        $scriptBaseName = $scriptName.Substring(0, $scriptName.LastIndexOf('.'))
+        $scriptLineNumber = '{0}:{1}' -f $scriptName, $MyInvocation.ScriptLineNumber
+        
+        if ([String]::IsNullOrEmpty($Component)) {
+            $Component = $scriptBaseName
+        }
     }
 
     process {
@@ -42,7 +56,7 @@ function Write-Log {
                 
                 $timestamp = "$(Get-Date -Format 'HH:mm:ss').$((Get-Date).Millisecond)+000"
                 
-                $lineFormat = $Message, $timestamp, (Get-Date -Format 'MM-dd-yyyy'), $scriptLineNumber, $script:currentUser, $severityInt
+                $lineFormat = $Message, $timestamp, (Get-Date -Format 'MM-dd-yyyy'), $Component, $script:currentUser, $severityInt, $script:currentProcess, $scriptLineNumber
                 
                 Add-Content -Value ($script:linetemplate -f $lineFormat) -Path $logFile -Force
                 
