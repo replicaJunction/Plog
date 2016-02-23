@@ -32,9 +32,7 @@
     )
     
     begin {
-        
         $p = Get-ModulePrivateData
-        
     }
     
     process {
@@ -86,9 +84,7 @@
     }
     
     end {
-        
         # Update PrivateData again
         Set-ModulePrivateData -PrivateData $p
-        
     }
 }
