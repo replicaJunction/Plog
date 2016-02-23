@@ -6,11 +6,6 @@
                    Mandatory = $true)]
         [String] $Path,
         
-        # Maximum number of log files to preserve if using MaxSize.
-        [Parameter(ParameterSetName = 'LogToFile',
-                   Mandatory = $false)]
-        [int] $MaxDays,
-        
         # Indicates that logging should be done to the Windows event log.
         [Parameter(ParameterSetName = 'LogToEventLog',
                    Mandatory = $true)]

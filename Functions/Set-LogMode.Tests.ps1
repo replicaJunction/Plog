@@ -24,14 +24,13 @@ InModuleScope 'Plog' {
             }
             
             It 'Updates the module PrivateData with all expected properties' {
-                $output = Set-LogMode -Path $logPath -MaxDays 3
+                $output = Set-LogMode -Path $logPath
                 
                 $output.Mode | Should BeExactly 'File'
                 $output.Path | Should BeExactly $logPath
                 
                 # History hashtable
                 $output.History | Should Not BeNullOrEmpty
-                $output.History.MaxDays | Should Be 3
             }
         }
         
