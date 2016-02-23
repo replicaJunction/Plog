@@ -30,10 +30,8 @@ InModuleScope 'Plog' {
         $dateTwoDaysAgo = $dateToday.AddDays(-2)
         $dateOneWeekAgo = $dateToday.AddDays(-7)
         
-        $logFileName = Get-LogFileName
-        Write-Host "Log file name: $logFileName" -ForegroundColor Yellow
+        $logFileName = Get-LogFileName -Force
         $logDirectory = Split-Path -Path $logFileName -Parent
-        Write-Host "Log file directory: $logDirectory" -ForegroundColor Yellow
         
         # Make a "backup" reference to the real Get-Date so we can do some
         # crazy mocks with it
@@ -49,11 +47,11 @@ InModuleScope 'Plog' {
                 & $getDateCmdlet -Date $targetDate -Format $Format
             }
             
+            # Get a new log filename
+            $filename = Get-LogFileName -Force
+            
             # Create a log entry
             Write-Log "Log entry from date $targetDate"
-            
-            $filename = Get-LogFileName
-            # Write-Host "Created log file from $targetDate at path $filename"
             
             # Modify file attributes
             $file = Get-Item -Path $filename

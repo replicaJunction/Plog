@@ -39,7 +39,7 @@ InModuleScope 'Plog' {
             1
         )
         
-        $logFileName = Get-LogFileName
+        $logFileName = Get-LogFileName -Force
         Write-Host "Log file name: $logFileName" -ForegroundColor Yellow
         $logDirectory = Split-Path -Path $logFileName -Parent
         Write-Host "Log file directory: $logDirectory" -ForegroundColor Yellow
@@ -58,10 +58,12 @@ InModuleScope 'Plog' {
                 & $getDateCmdlet -Date $targetDate -Format $Format
             }
             
+            # Get a new log filename
+            $filename = Get-LogFileName -Force
+            
             # Create a log entry
             Write-Log "Log entry from date $targetDate"
             
-            $filename = Get-LogFileName
             # Write-Host "Created log file from $targetDate at path $filename"
             
             # Modify file attributes

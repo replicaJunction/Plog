@@ -4,8 +4,6 @@ $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path) -replace '\.Tests\.', '.'
 
 InModuleScope "Plog" {
     Describe "Write-Log" {
-        $filePath = "TestDrive:\temp.log"
-
         $privateData = @{
             Mode    = 'File'
             Path    = 'TestDrive:\dir'
@@ -15,23 +13,22 @@ InModuleScope "Plog" {
         }
         
         Mock Get-ModulePrivateData { $privateData }
-            
+        
+        # Get a new log filename
+        $logFile = Get-LogFileName -Force
+        
         Context 'Logging to file' {
-            Mock Get-LogFileName { $filePath }
             
             $output = Write-Log -Message 'Test'
             
             It 'Uses Get-ModulePrivateData to obtain log settings' {
-                Assert-MockCalled -CommandName Get-ModulePrivateData -Scope Context -Times 1 -Exactly
+                # Called once by Write-Log and once by Get-LogFileName
+                Assert-MockCalled -CommandName Get-ModulePrivateData -Scope Context -Times 2 -Exactly
             }
             
-            It 'Uses Get-LogFileName to obtain the fully qualified path to the log file' {
-                Assert-MockCalled -CommandName Get-LogFileName -Scope Context -Times 1 -Exactly
-            }
-
             It 'Creates the log file if it does not exist' {
                 # Should have been created by the tests above
-                $filePath | Should Exist
+                $logFile | Should Exist
             }
             
             It 'Produces no output' {
@@ -73,7 +70,6 @@ InModuleScope "Plog" {
         }
         
         Context 'Write-Host testing' { 
-            
             Mock Write-Host {
                 @{
                     Message         = $Object
@@ -82,19 +78,21 @@ InModuleScope "Plog" {
                 }
             }
             
+            $privateData.WriteHost = $true
+            $output = Write-Log -Message 'Test'
             
             It 'Produces output to Write-Host if the WriteHost value is set' {
-                $privateData.WriteHost = $true
-                $output = Write-Log -Message 'Test'
-                Assert-MockCalled -CommandName Write-Host -Scope It -Times 1 -Exactly
+                Assert-MockCalled -CommandName Write-Host -Scope Context -Times 1 -Exactly
                 $output.ForegroundColor | Should Be $host.PrivateData.VerboseForegroundColor
                 $output.BackgroundColor | Should Be $host.PrivateData.VerboseBackgroundColor
             }
             
-            It 'Does not write output via Write-Host if WriteHost is not set' {
-                $privateData.WriteHost = $false
-                $output = Write-Log -Message 'Test'
-                Assert-MockCalled -CommandName Write-Host -Scope It -Times 0 -Exactly
+            $privateData.WriteHost = $false
+            $output = Write-Log -Message 'Test'
+                
+            It 'Does not write output via Write-Host if WriteHost is not set' {    
+                Assert-MockCalled -CommandName Write-Host -Scope Context -Times 1 -Exactly
+                $output | Should BeNullOrEmpty
             }
         }
         
