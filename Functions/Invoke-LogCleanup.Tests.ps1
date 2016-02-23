@@ -20,8 +20,11 @@ InModuleScope 'Plog' {
         Mock Invoke-LogCleanupStructuredFolder -Verifiable {}
         
         Context 'Simple history mode' {
-            It 'Throws no errors' {
-                { Invoke-LogCleanup } | Should Not Throw
+            
+            $output = Invoke-LogCleanup
+            
+            It 'Produces no output' {
+                $output | Should Be $null
             }
             
             It 'Calls Invoke-LogCleanupSimple' {
@@ -31,13 +34,19 @@ InModuleScope 'Plog' {
             It 'Does not call Invoke-LogCleanupStructuredFolder' {
                 Assert-MockCalled -CommandName Invoke-LogCleanupStructuredFolder -Scope Context -Exactly -Times 0
             }
+            
+            It 'Throws no errors' {
+                { Invoke-LogCleanup } | Should Not Throw
+            }
         }
         
         Context 'StructuredFolder history mode' {
             $privateData.History.Mode = 'StructuredFolder'
             
-            It 'Throws no errors' {
-                { Invoke-LogCleanup } | Should Not Throw
+            $output = Invoke-LogCleanup
+            
+            It 'Produces no output' {
+                $output | Should Be $null
             }
             
             It 'Does not call Invoke-LogCleanupSimple' {
@@ -47,6 +56,10 @@ InModuleScope 'Plog' {
             It 'Calls Invoke-LogCleanupStructuredFolder' {
                 Assert-MockCalled -CommandName Invoke-LogCleanupStructuredFolder -Scope Context -Exactly -Times 1
             }
+            
+            It 'Throws no errors' {
+                { Invoke-LogCleanup } | Should Not Throw
+            }
         }
         
         Context 'Error checking' {
@@ -54,6 +67,26 @@ InModuleScope 'Plog' {
             
             It 'Throws an exception if an undefined or null history mode is set' {
                 { Invoke-LogCleanup } | Should Throw 'Unsupported log history mode [NotSupported]'
+            }
+        }
+        
+        Context 'Event Log logging mode' {
+            Mock Write-Warning {}
+            $privateData.Mode = 'EventLog'
+            
+            $output = Invoke-LogCleanup
+            
+            It 'Produces no output' {
+                $output | Should Be $null
+            }
+            
+            It 'Takes no action' {
+                Assert-MockCalled -CommandName Invoke-LogCleanupSimple -Scope Context -Exactly -Times 0
+                Assert-MockCalled -CommandName Invoke-LogCleanupStructuredFolder -Scope Context -Exactly -Times 0
+            }
+            
+            It 'Produces a warning message' {
+                Assert-MockCalled -CommandName Write-Warning -Scope Context -Exactly -Times 1
             }
         }
     }
