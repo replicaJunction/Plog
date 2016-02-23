@@ -1,4 +1,4 @@
-﻿function Remove-LogHistory {
+function Invoke-LogCleanupStructuredFolder {
     [CmdletBinding()]
     param()
     
@@ -32,30 +32,28 @@
         $logDir = Split-Path -Path $currentLogFile -Parent
         $logBaseName = ((Split-Path -Path $currentLogFile -Leaf) -split '_')[0] # Remove the date stamp
         
-        if ($p.History.Mode -eq 'StructuredFolder') {
-            $dirDaily = Join-Path -Path $logDir -ChildPath 'daily'
-            $dirWeekly = Join-Path -Path $logDir -ChildPath 'weekly'
-            $dirMonthly = Join-Path -Path $logDir -ChildPath 'monthly'
+        $dirDaily = Join-Path -Path $logDir -ChildPath 'daily'
+        $dirWeekly = Join-Path -Path $logDir -ChildPath 'weekly'
+        $dirMonthly = Join-Path -Path $logDir -ChildPath 'monthly'
             
-            try {
-                $dirDaily, $dirWeekly, $dirMonthly | % {
-                    if (-not (Test-Path -Path $_)) {
-                        [void] (New-Item -Path $_ -ItemType Directory -Force)
-                    }
+        try {
+            $dirDaily, $dirWeekly, $dirMonthly | % {
+                if (-not (Test-Path -Path $_)) {
+                    [void] (New-Item -Path $_ -ItemType Directory -Force)
                 }
             }
-            catch [System.IOException] {
-                $err = $_
-                Write-Debug "Plog encountered an exception creating log archives"
-                throw $err
-            }
+        }
+        catch [System.IOException] {
+            $err = $_
+            Write-Debug "Invoke-LogCleanupStructuredFolder: Plog encountered an exception creating log archives"
+            throw $err
         }
     }
     
     process {
         $rootLogFiles = Get-ChildItem -Path $logDir -Filter "$logBaseName*.log"
         foreach ($file in $rootLogFiles) {
-            Write-Debug "Remove-LogHistory: processing file $($file.FullName)"
+            Write-Debug "Invoke-LogCleanupStructuredFolder: processing file $($file.FullName)"
             
             # Get the date out of the filename using a named group in the regex
             # and PowerShell's automatic $Matches variable
@@ -64,30 +62,30 @@
                 $thisDate = [DateTime]::ParseExact($Matches.date, $script:fileDateFormat, [System.Globalization.CultureInfo]::CurrentCulture)
                 
                 if ($thisDate -ge $dateDailyCutoff) {
-                    Write-Debug "Remove-LogHistory: file is less than $($p.History.Days) days old; copying to Daily directory"
+                    Write-Debug "Invoke-LogCleanupStructuredFolder: file is less than $($p.History.Days) days old; copying to Daily directory"
                     Copy-Item -Path $file.FullName -Destination $dirDaily                    
                 }
                 
                 if ($thisDate -ge $dateWeeklyCutoff -and [int] $thisDate.DayOfWeek -eq $p.History.DayOfWeek) {
-                    Write-Debug "Remove-LogHistory: file is from $($thisDate.DayOfWeek); copying to Weekly directory"
+                    Write-Debug "Invoke-LogCleanupStructuredFolder: file is from $($thisDate.DayOfWeek); copying to Weekly directory"
                     Copy-Item -Path $file.FullName -Destination $dirWeekly
                 }
                 
                 if ($thisDate -ge $dateMonthlyCutoff -and [int] $thisDate.Day -eq $p.History.DayOfMonth) {
-                    Write-Debug "Remove-LogHistory: file is from day $($thisDate.Day) of the month; copying to Monthly directory"
+                    Write-Debug "Invoke-LogCleanupStructuredFolder: file is from day $($thisDate.Day) of the month; copying to Monthly directory"
                     Copy-Item -Path $file.FullName -Destination $dirMonthly
                 }
                 
                 if ($thisDate -ge [DateTime]::Today) {
-                    Write-Debug "Remove-LogHistory: file is from today. No action will be taken."
+                    Write-Debug "Invoke-LogCleanupStructuredFolder: file is from today. No action will be taken."
                 }
                 else {
-                    Write-Debug "Remove-LogHistory: removing original file"
+                    Write-Debug "Invoke-LogCleanupStructuredFolder: removing original file"
                     Remove-Item -Path $file.FullName -Force
                 }
             }
             else {
-                Write-Debug "Remove-LogHistory: unknown file [$file] will be removed"
+                Write-Debug "Invoke-LogCleanupStructuredFolder: unknown file [$file] will be removed"
                 Remove-Item -Path $file.FullName -Force
             }
         }
@@ -101,12 +99,12 @@
                 $thisDate = [DateTime]::ParseExact($Matches.date, $script:fileDateFormat, [System.Globalization.CultureInfo]::CurrentCulture)
                 
                 if ($thisDate -lt $dateDailyCutoff) {
-                    Write-Debug "Remove-LogHistory: daily file [$file] is past the cutoff date and will be removed"
+                    Write-Debug "Invoke-LogCleanupStructuredFolder: daily file [$file] is past the cutoff date and will be removed"
                     Remove-Item -Path $file.FullName -Force
                 }             
             }
             else {
-                Write-Debug "Remove-LogHistory: unknown file [$file] will be removed"
+                Write-Debug "Invoke-LogCleanupStructuredFolder: unknown file [$file] will be removed"
                 Remove-Item -Path $file.FullName -Force
             }
         }
@@ -119,12 +117,12 @@
                 $thisDate = [DateTime]::ParseExact($Matches.date, $script:fileDateFormat, [System.Globalization.CultureInfo]::CurrentCulture)
                 
                 if ($thisDate -lt $dateWeeklyCutoff) {
-                    Write-Debug "Remove-LogHistory: weekly file [$file] is past the cutoff date and will be removed"
+                    Write-Debug "Invoke-LogCleanupStructuredFolder: weekly file [$file] is past the cutoff date and will be removed"
                     Remove-Item -Path $file.FullName -Force
                 }             
             }
             else {
-                Write-Debug "Remove-LogHistory: unknown file [$file] will be removed"
+                Write-Debug "Invoke-LogCleanupStructuredFolder: unknown file [$file] will be removed"
                 Remove-Item -Path $file.FullName -Force
             }
         }
@@ -137,12 +135,12 @@
                 $thisDate = [DateTime]::ParseExact($Matches.date, $script:fileDateFormat, [System.Globalization.CultureInfo]::CurrentCulture)
                 
                 if ($thisDate -lt $dateMonthlyCutoff) {
-                    Write-Debug "Remove-LogHistory: weekly file [$file] is past the cutoff date and will be removed"
+                    Write-Debug "Invoke-LogCleanupStructuredFolder: weekly file [$file] is past the cutoff date and will be removed"
                     Remove-Item -Path $file.FullName -Force
                 }             
             }
             else {
-                Write-Debug "Remove-LogHistory: unknown file [$file] will be removed"
+                Write-Debug "Invoke-LogCleanupStructuredFolder: unknown file [$file] will be removed"
                 Remove-Item -Path $file.FullName -Force
             }
         }

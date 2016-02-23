@@ -1,9 +1,9 @@
-﻿$here = Split-Path -Parent $MyInvocation.MyCommand.Path
+$here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path) -replace '\.Tests\.', '.'
 . "$here\$sut"
 
 InModuleScope 'Plog' {
-    Describe 'Remove-LogHistory' {
+    Describe 'Invoke-LogCleanupStructuredFolder' {
         
         $privateData = @{
             Mode    = 'File'
@@ -26,7 +26,7 @@ InModuleScope 'Plog' {
         # Name of this script file, without the .ps1 extension.
         # MyInvocation.MyCommand.Path and MyInvocation.ScriptName do weird
         # things inside Pester.
-        $scriptName = 'Remove-LogHistory.Tests'
+        $scriptName = 'Invoke-LogCleanupStructuredFolder.Tests'
         
         # Init some helper variables
         $dateToday = Get-Date
@@ -96,7 +96,7 @@ InModuleScope 'Plog' {
         Mock Get-Date -ParameterFilter {$Date -eq $null} { & $getDateCmdlet -Format $Format @PSBoundParameters }
         
         # Run the function
-        Remove-LogHistory
+        Invoke-LogCleanupStructuredFolder
         
         It 'Creates daily, weekly, and monthly log folders' {
             "$logDirectory\daily" | Should Exist
