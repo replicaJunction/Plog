@@ -81,6 +81,14 @@
         }
         
         $p.WriteHost = $WriteHost
+        
+        # Check the History hashtable, and supply defaults if necessary
+        if (-not $p.History -or $p.History -eq @{}) {
+            $p.History = @{
+                Mode = 'Simple'
+                Days = 7
+            }
+        }
     }
     
     end {
