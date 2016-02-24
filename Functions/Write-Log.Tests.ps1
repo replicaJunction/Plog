@@ -36,6 +36,22 @@ InModuleScope "Plog" {
             }
         }
 
+        Context 'Logging to file - High performance mode' {
+            # Performance mode relies on the System.IO.StreamWriter class, and
+            # currently, Pester is not able to test .NET calls. We'll just have
+            # to test to make sure it's not using Add-Content for now. 
+            
+            Mock Add-Content {}
+            
+            Start-Log
+            $output = Write-Log -Message 'Test'
+            Stop-Log
+            
+            It 'Does not call Add-Content in high performance mode' {
+                Assert-MockCalled -CommandName Add-Content -Scope Context -Exactly -Times 0
+            }
+        }
+        
         Context 'Logging to event log' {
             $privateData = @{
                 Mode    = 'EventLog'

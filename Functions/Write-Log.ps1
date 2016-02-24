@@ -58,7 +58,15 @@ function Write-Log {
                 
                 $lineFormat = $Message, $timestamp, (Get-Date -Format 'MM-dd-yyyy'), $Component, $script:currentUser, $severityInt, $script:currentProcess, $scriptLineNumber
                 
-                Add-Content -Value ($script:linetemplate -f $lineFormat) -Path $logFile -Force
+                $lineText = $script:lineTemplate -f $lineFormat
+                
+                if ($script:logWriter) {
+                    # Using high performance mode
+                    [void] $logWriter.Write("$lineText`n")
+                }
+                else {
+                    Add-Content -Value $lineText -Path $logFile -Force
+                }
                 
                 if ($p.MaxSize) {
                     Optimize-LogFile
