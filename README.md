@@ -102,4 +102,4 @@ If you are using high performance mode, you must call Stop-Log first before Invo
 
 # Credits
 
-Plog would not be possible without some of the great posts from #PSBlogWeek 2016. I'd especially like to thank Adam Bertram for information on CMTrace's logging template, as well as the method for logging the script line number. [Check out the full blog post](http://www.adamtheautomator.com/building-logs-for-cmtrace-powershell/) for more details.
+Plog would not be possible without some of the great posts from [#PSBlogWeek 2016](https://twitter.com/hashtag/PSBlogWeek). I'd especially like to thank Adam Bertram for information on CMTrace's logging template, as well as the method for logging the script line number. [Check out the full blog post](http://www.adamtheautomator.com/building-logs-for-cmtrace-powershell/) for more details.
