@@ -1,4 +1,4 @@
-﻿function Get-LogFileName {
+function Get-LogFileName {
     [CmdletBinding()]
     param(
         # Name of the script file calling Write-Log
@@ -15,7 +15,7 @@
         
         # Use a script-wide variable for performance
         if ($script:fileDateFormat -eq $null) {
-            $script:fileDateFormat = 'yyyyMMdd-HHmm'
+            $script:fileDateFormat = 'yyyy-MM-dd-HHmm'
         }
     }
     

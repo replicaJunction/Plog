@@ -1,10 +1,10 @@
-﻿$here = Split-Path -Parent $MyInvocation.MyCommand.Path
+$here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path) -replace '\.Tests\.', '.'
 . "$here\$sut"
 
 InModuleScope 'Plog' {
     Describe "Get-LogFileName" {
-        $dateFormat = 'yyyyMMdd-HHmm'
+        $dateFormat = 'yyyy-MM-dd-HHmm'
     
         $privateData = @{
             Mode    = 'File'

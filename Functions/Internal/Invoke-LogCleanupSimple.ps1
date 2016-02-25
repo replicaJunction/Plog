@@ -6,11 +6,11 @@ function Invoke-LogCleanupSimple {
         # Constants
         if (-not $script:regexDate) {
             # Regex to get the date out of a log file name
-            $script:regexDate = '^.*_(?<date>\d{8}-\d{4})\.log$'
+            $script:regexDate = '^.*_(?<date>\d{4}-\d{2}-\d{2}-\d{4})\.log$'
         }
         
         if (-not $script:fileDateFormat) {
-            $script:fileDateFormat = 'yyyyMMdd-HHmm'
+            $script:fileDateFormat = 'yyyy-MM-dd-HHmm'
         }
         
         $p = Get-ModulePrivateData

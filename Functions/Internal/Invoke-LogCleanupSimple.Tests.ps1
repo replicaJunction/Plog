@@ -17,7 +17,7 @@ InModuleScope 'Plog' {
         Mock Get-ModulePrivateData { $privateData }
         Mock Write-Debug { Write-Host $Message -ForegroundColor Cyan }
         
-        $dateFormat = 'yyyyMMdd-HHmm'
+        $dateFormat = 'yyyy-MM-dd-HHmm'
         
         # Name of this script file, without the .ps1 extension.
         # MyInvocation.MyCommand.Path and MyInvocation.ScriptName do weird
