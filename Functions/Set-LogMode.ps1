@@ -1,4 +1,4 @@
-﻿function Set-LogMode {
+function Set-LogMode {
     [CmdletBinding(DefaultParameterSetName = 'LogToFile')]
     param(
         # Directory to use for log files
@@ -84,8 +84,8 @@
                 }
                 
                 if ($NewFile) {
-                    $newFilename = Get-LogFileName -ScriptName (Split-Path -Path $MyInvocation.ScriptName -Leaf) -Force
-                    Write-Verbose "NewFile was specified. Logs will be saved to $($newFilename)"
+                    $script:logFileName = $null
+                    Write-Verbose "NewFile was specified; creating new log file"
                 }
             }
         }
