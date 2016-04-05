@@ -6,6 +6,11 @@
                    Mandatory = $true)]
         [String] $Path,
         
+        # Re-create the log filename instead of using a cached filename. This will usually create a new file (useful in infinite loops, etc.)
+        [Parameter(ParameterSetName = 'LogToFile',
+                   Mandatory = $false]
+        [Switch] $NewFile,
+        
         # Indicates that logging should be done to the Windows event log.
         [Parameter(ParameterSetName = 'LogToEventLog',
                    Mandatory = $true)]
@@ -76,6 +81,11 @@
                 $p.Path = $Path
                 $p.History = @{
                     MaxDays = $MaxDays
+                }
+                
+                if ($NewFile) {
+                    $newFilename = Get-LogFileName -ScriptName (Split-Path -Path $MyInvocation.ScriptName -Leaf) -Force
+                    Write-Verbose "NewFile was specified. Logs will be saved to $($newFilename)"
                 }
             }
         }
