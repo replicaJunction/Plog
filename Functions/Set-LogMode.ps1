@@ -8,7 +8,7 @@
         
         # Re-create the log filename instead of using a cached filename. This will usually create a new file (useful in infinite loops, etc.)
         [Parameter(ParameterSetName = 'LogToFile',
-                   Mandatory = $false]
+                   Mandatory = $false)]
         [Switch] $NewFile,
         
         # Indicates that logging should be done to the Windows event log.
